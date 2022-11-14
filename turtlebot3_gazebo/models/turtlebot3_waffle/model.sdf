@@ -349,6 +349,7 @@
       </collision>
     </link>
 
+<!--
     <link name="camera_link"/>
 
     <link name="camera_rgb_frame">
@@ -369,7 +370,7 @@
       <sensor name="camera" type="camera">
         <always_on>true</always_on>
         <visualize>true</visualize>
-        <update_rate>30</update_rate>
+        <update_rate>1</update_rate>
         <camera name="intel_realsense_r200">
           <horizontal_fov>1.02974</horizontal_fov>
           <image>
@@ -383,30 +384,25 @@
           </clip>
           <noise>
             <type>gaussian</type>
-            <!-- Noise is sampled independently per pixel on each frame.
-                  That pixel's noise value is added to each of its color
-                  channels, which at that point lie in the range [0,1]. -->
+
             <mean>0.0</mean>
             <stddev>0.007</stddev>
           </noise>
         </camera>
           <plugin name="camera_driver" filename="libgazebo_ros_camera.so">
             <ros>
-              <!-- <namespace>test_cam</namespace> -->
-              <!-- <remapping>image_raw:=image_demo</remapping> -->
-              <!-- <remapping>camera_info:=camera_info_demo</remapping> -->
+
             </ros>
-            <!-- camera_name>omit so it defaults to sensor name</camera_name-->
-            <!-- frame_name>omit so it defaults to link name</frameName-->
-            <!-- <hack_baseline>0.07</hack_baseline> -->
+
           </plugin>
       </sensor>
-    </link>    
+    </link>
+    -->
     <gazebo reference="turtlebot3_tray">
     </gazebo>
     <link name="turtlebot3_tray">
       <visual name="turtlebot3_tray_base">>
-        <pose>-0.06 0 .13 0 0 0</pose>
+        <pose>-0.06 0 .14 0 0 0</pose>
         <geometry>
          <box>
             <size>0.25 0.25 0.005</size>
@@ -416,12 +412,32 @@
         <material>Gazebo/Red</material>
       </visual>
       <collision name="turtlebot3_tray_collision">
-        <pose>-0.06 0 .13 0 0 0</pose>
+        <pose>-0.06 0 .14 0 0 0</pose>
         <geometry>
           <box>
             <size>0.25 0.25 0.005</size>
          </box>
         </geometry>
+        <surface>
+          <!-- This friction pamareter don't contain reliable data!! -->
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+5</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+
       </collision>
     </link>
 
@@ -430,6 +446,34 @@
       <child>turtlebot3_tray</child>
     <pose>0.94 0.165 0.494 0 0 0</pose>
   </joint>
+<!--
+  <link name="turtlebot3_wall1">
+      <visual name="turtlebot3_wall1_visual">>
+        <pose>-0.0 0 0 0 0 0</pose>
+        <geometry>
+         <box>
+            <size>0.25 0.25 0.005</size>
+         </box>
+        </geometry>
+
+        <material>Gazebo/Red</material>
+      </visual>
+      <collision name="turtlebot3_wall1_collision">
+        <pose>-0.0 0 .0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.25 0.25 0.005</size>
+         </box>
+        </geometry>
+      </collision>
+    </link>
+
+  <joint name="turtlebot3_wall1_joint" type="fixed">
+    <parent>turtlebot3_tray</parent>
+      <child>turtlebot3_wall1</child>
+    <pose>0.0 0.0 0.0 1.57 1.57 0</pose>
+  </joint>
+  -->
 
     <joint name="base_joint" type="fixed">
       <parent>base_footprint</parent>
@@ -481,7 +525,7 @@
         <xyz>0 0 1</xyz>
       </axis>
     </joint>
-
+<!--
     <joint name="camera_joint" type="fixed">
       <parent>base_link</parent>
       <child>camera_link</child>
@@ -499,30 +543,26 @@
         <xyz>0 0 1</xyz>
       </axis>
     </joint>
+-->
 
     <plugin name="turtlebot3_diff_drive" filename="libgazebo_ros_diff_drive.so">
 
       <ros>
-		      <!-- <namespace>/robot0</namespace> -->
+        <!-- <namespace>/robot0</namespace> -->
       </ros>
 
       <update_rate>30</update_rate>
-
-      <!-- wheels -->
       <left_joint>wheel_left_joint</left_joint>
       <right_joint>wheel_right_joint</right_joint>
 
-      <!-- kinematics -->
       <wheel_separation>0.287</wheel_separation>
       <wheel_diameter>0.066</wheel_diameter>
 
-      <!-- limits -->
       <max_wheel_torque>20</max_wheel_torque>
       <max_wheel_acceleration>1.0</max_wheel_acceleration>
 
       <command_topic>cmd_vel</command_topic>
 
-      <!-- output -->
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>false</publish_wheel_tf>
