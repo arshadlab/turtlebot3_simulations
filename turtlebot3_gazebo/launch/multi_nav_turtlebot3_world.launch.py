@@ -111,13 +111,39 @@ def generate_launch_description():
     ld.add_action(gzserver_cmd)
     ld.add_action(gzclient_cmd)
 
+    params_file = LaunchConfiguration('params_file')
+    declare_params_file_cmd = DeclareLaunchArgument(
+        'params_file',
+        default_value=os.path.join(bringup_dir, 'params', 'nav2_params.yaml'),
+        description='Full path to the ROS2 parameters file to use for all launched nodes')
+
+    remappings = [('/tf', 'tf'),
+                  ('/tf_static', 'tf_static')]
+    map_server=Node(package='nav2_map_server',
+        executable='map_server',
+        name='map_server',
+        output='screen',
+        parameters=[{'yaml_filename': os.path.join(get_package_share_directory('turtlebot3_navigation2'), 'map', 'map.yaml')}],
+        remappings=remappings)
+
+    map_server_lifecyle=Node(package='nav2_lifecycle_manager',
+            executable='lifecycle_manager',
+            name='lifecycle_manager_map_server',
+            output='screen',
+            parameters=[{'use_sim_time': use_sim_time},
+                        {'autostart': True},
+                        {'node_names': ['map_server']}])
+
+    ld.add_action(declare_params_file_cmd)
+    ld.add_action(map_server)
+    ld.add_action(map_server_lifecyle)
     ######################    
-    last_action = None
 
     # Remapping is required for state publisher otherwise /tf and /tf_static 
     # will get be published on root '/' namespace
     remappings = [('/tf', 'tf'), ('/tf_static', 'tf_static')]
 
+    last_action = None
     # Spawn turtlebot3 instances in gazebo
     for robot in robots:
 
@@ -156,7 +182,8 @@ def generate_launch_description():
                 launch_arguments={'slam': 'False',
                                     'namespace': namespace,
                                     'use_namespace': 'True',
-                                    'map': os.path.join(get_package_share_directory('turtlebot3_navigation2'), 'map', 'map.yaml'),
+                                    'map': '',
+                                    'map_server': 'False',
                                     'params': param_dir,
                                     'default_bt_xml_filename': os.path.join(
                                         get_package_share_directory('nav2_bt_navigator'),
@@ -229,6 +256,10 @@ def generate_launch_description():
                 on_exit=[initial_pose_cmd, rviz_cmd, drive_turtlebot3_burger],
             )
         )
+
+        # Perform next rviz and other node instantiation after the previous intialpose request done
+        last_action = initial_pose_cmd
+
         ld.add_action(post_turtlebot3_event)
     ######################
 
